@@ -1,12 +1,12 @@
 const materials = {
 		'mirror' : [true, true, true, true],
 		'file_names' : [ "https://rellks.github.io/mirror_trace/Star-easy.png", "https://rellks.github.io/mirror_trace/Star-medium.png", "https://rellks.github.io/mirror_trace/Star-hard.png", "https://rellks.github.io/mirror_trace/Star.png"],
-		'xstarts' : [200, 200, 200, 200],
-		'ystarts' : [100, 100, 100, 100],		
-		'xmids' : [200, 200, 200, 200],
-		'ymids' : [240, 240, 240, 240],
-		'xends' :  [200, 200, 200, 200],
-		'yends' :    [100, 100, 100, 100]
+		'xstarts' : [447, 452, 452, 452],
+		'ystarts' : [172, 165, 165, 165],		
+		'xmids' : [447, 452, 452, 452],
+		'ymids' : [638, 652, 652, 652],
+		'xends' :  [447, 452, 452, 452],
+		'yends' :  [172, 165, 165, 165]
 	}
 	
 	// this script can save screenshots of completed trials.  
@@ -16,12 +16,14 @@ const materials = {
  	const saveTrace = false;
 
 	//image dimensions
-	const mywidth = 400;
-	const myheight = 300;
+	const mywidth = 900;
+	const myheight = 675;
 	
 	const startRadius = 10;
-	const endRadius = 8;
+	const endRadius = 15;
 	const midRadius = 20;
+
+	const minPathLength = 200; // minimum length of path to complete trace
 
 	let numRestarts = 0;
 	let firstTry = true;
@@ -142,6 +144,30 @@ function onPaint() {
 	}
 	ctx_mirror.stroke();
 };
+
+// draw start, middle, end circle points
+function drawSMECircles(){
+	ctx_mirror.globalAlpha=1;
+
+	// TODO comment out; Display mid and end circles -------
+	/*ctx_mirror.beginPath();
+	ctx_mirror.arc(mywidth - xmid, myheight - ymid, midRadius, 0, 2 * Math.PI, false);
+	ctx_mirror.fillStyle = 'blue';
+	ctx_mirror.fill();
+
+	ctx_mirror.beginPath();
+	ctx_mirror.arc(mywidth - xend, myheight - yend, endRadius, 0, 2 * Math.PI, false);
+	ctx_mirror.fillStyle = 'red';
+	ctx_mirror.fill();*/
+
+	// --------
+
+	ctx_mirror.beginPath();
+	ctx_mirror.arc(mywidth - xstart, myheight - ystart, startRadius, 0, 2 * Math.PI, false);
+	ctx_mirror.fillStyle = '#add8e6'; //light blue
+	ctx_mirror.fill();
+}
+
 function getNewImageObj(){
 //load the image to trace
 var imageObj = new Image();
@@ -150,20 +176,13 @@ imageObj.onload = function() {
  ctx_mirror.globalAlpha=0.4;
  ctx.globalAlpha=0.4;
 
- ctx.beginPath();
-  if (mirror) {
-	  ctx.arc(xstart, ystart, startRadius, 0, 2 * Math.PI, false);
-
-  } else {
-	  ctx.arc(xstart, ystart, startRadius, 0, 2 * Math.PI, false);
-  }
-
- ctx.fillStyle = 'green';
- ctx.fill();
+drawSMECircles();
+ 
+ctx_mirror.beginPath();
 
  ctx_mirror.globalAlpha=1;
  ctx.globalAlpha=1;
- document.getElementById("status").innerHTML = "Click the green circle to start."; 
+ document.getElementById("status").innerHTML = "Click the blue circle to start."; 
 };
 imageObj.crossOrigin="anonymous";
 imageObj.src=imagePath;
@@ -204,7 +223,7 @@ function captureMouseMovement(e){
 		var hex = "#" + ("000000" + rgbToHex(p[0], p[1], p[2])).slice(-6);
 
 		var cendRadius = Math.sqrt(Math.pow(mouse.x - xend, 2) + Math.pow(mouse.y-yend, 2));
-		if (drawing && passedMid && cendRadius < endRadius && pathLength > 200) {
+		if (drawing && passedMid && cendRadius < endRadius && pathLength > minPathLength) {
 			completed = true;
 			handleKeyDown({keyCode:13});
 		}
@@ -284,18 +303,15 @@ function captureMouseMovement(e){
 			if (currentRefresh - lastRefresh > (1000/30) ) {
 				ctx_mirror.drawImage(imageObj, 0, 0, mywidth, myheight);
 				
+
 				ctx_mirror.fillStyle = 'green';
 				ctx_mirror.globalAlpha=0.4;
-				//ctx_mirror.beginPath();
-	            if (mirror) {
-				//	ctx_mirror.arc(mywidth - xstart, myheight - ystart, startRadius, 0, 2 * Math.PI, false);
-				} else {
-				//	ctx_mirror.arc(xstart, ystart, startRadius, 0, 2 * Math.PI, false);
-				}
-	           // ctx_mirror.fill();
+
+				drawSMECircles();
+
+				ctx_mirror.beginPath();
 				ctx_mirror.globalAlpha=1
 				
-				ctx_mirror.beginPath();
 				if (mirror) {
 					ctx_mirror.arc(mywidth-mouse.x, myheight-mouse.y, 4, 0, 2 * Math.PI, false);
 				} else {
@@ -303,8 +319,11 @@ function captureMouseMovement(e){
 				}
 				ctx_mirror.fillStyle = 'green';
 				ctx_mirror.fill();
+
+				ctx_mirror.beginPath();
+
 				lastRefresh = currentRefresh
-				document.getElementById("status").innerHTML = "Click the green circle to start."; 
+				document.getElementById("status").innerHTML = "Click the blue circle to start."; 
 			}
 			} 
 		}
@@ -446,7 +465,7 @@ function do_mirror_cyclic() {
 	ymid = materials.ymids[trialnumber];
 
 	//drawing contexts for cursor area and mirrored area
-	canvas = document.querySelector('#paint');
+	canvas = document.querySelector('#mirror');
 	ctx = canvas.getContext('2d');
 	canvas_mirror = document.querySelector('#mirror');
 	ctx_mirror = canvas_mirror.getContext('2d');
